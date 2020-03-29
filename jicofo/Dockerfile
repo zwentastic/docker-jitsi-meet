@@ -8,5 +8,8 @@ RUN \
 
 COPY rootfs/ /
 
+RUN \
+	sed -i "s/Xmx3072m/Xmx1024m/g" /usr/share/jicofo/jicofo.sh
+
 VOLUME /config
 
