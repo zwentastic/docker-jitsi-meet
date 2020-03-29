@@ -48,7 +48,7 @@ if [[ $DISABLE_HTTPS -ne 1 ]]; then
         fi
     fi
     if [[ ! -f /config/nginx/dhparams.pem ]]; then
-        openssl dhparam -out /config/nginx/dhparams.pem 2048
+        openssl dhparam -dsaparam -out /config/nginx/dhparams.pem 2048
     fi
 fi
 
