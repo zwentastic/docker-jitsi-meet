@@ -1,24 +1,26 @@
+ 
+###############################
+FROM golang:1.12-alpine AS build
+
+RUN apk add --no-cache make git
+
+RUN mkdir -p /go/src/github.com/subchen/frep
+RUN git clone https://github.com/subchen/frep.git /go/src/github.com/subchen/frep
+WORKDIR /go/src/github.com/subchen/frep
+
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -a -ldflags "-s -w" -installsuffix cgo -o _releases/frep-1.3.8
+
+###############################
+
 FROM debian:stretch-slim
 
 ARG JITSI_RELEASE=stable
 
-ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-armhf.tar.gz /tmp/s6-overlay.tar.gz
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+
+ADD https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-armhf.tar.gz /tmp/s6-overlay.tar.gz
 ADD https://download.jitsi.org/jitsi-key.gpg.key /tmp/jitsi.key
-#ADD https://github.com/subchen/frep/releases/download/v1.3.5/frep-1.3.5-linux-amd64 /usr/bin/frep
-
-RUN \
-	apt-get update && \
-	apt-get install -y wget unzip && \ 
-	wget https://dl.google.com/go/go1.14.1.linux-armv6l.tar.gz -o go.tar.gzwget https://dl.google.com/go/go1.14.1.linux-armv6l.tar.gz && \
-	tar -C /usr/local -xzf go1.14.1.linux-armv6l.tar.gz  && \
-	wget https://github.com/subchen/frep/archive/v1.3.5.zip && \
-	unzip v1.3.5.zip && \
-	cd frep-1.3.5 && \
-	export GO111MODULE=on && \
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm /usr/local/go/bin/go build -a -installsuffix cgo -o frep && \
-	chmod +x frep && \
-	mv frep /usr/bin/frep
-
+COPY --from=build /go/src/github.com/subchen/frep/_releases/frep-* /usr//bin/frep
 
 COPY rootfs /
 
